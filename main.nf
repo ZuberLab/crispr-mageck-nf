@@ -29,8 +29,8 @@ def helpMessage() {
                         This file must conform to the input requirements of
                         MAGeCK 0.5.7 (http://mageck.sourceforge.net)
 
-        --resultsDir    Directory name to save results to. (Defaults to
-                        'results')
+        --outputDir     Directory name to save results to. (Defaults to
+                        '03_stats')
 
      Profiles:
         standard        local execution
@@ -46,7 +46,9 @@ def helpMessage() {
     """.stripIndent()
 }
 
-if (params.help){
+params.help = false
+
+if (params.help) {
     helpMessage()
     exit 0
 }
@@ -68,7 +70,7 @@ process mageck {
 
     tag { parameters.name }
 
-    publishDir path: "${params.resultsDir}/${parameters.name}",
+    publishDir path: "${params.outputDir}/${parameters.name}",
                mode: 'copy',
                overwrite: 'true',
                saveAs: {filename ->
@@ -115,7 +117,7 @@ process postprocess {
 
     tag { name }
 
-    publishDir path: "${params.resultsDir}/${name}",
+    publishDir path: "${params.outputDir}/${name}",
                mode: 'copy',
                overwrite: 'true'
 
