@@ -90,8 +90,8 @@ process mageck {
 
     script:
     rra_params = params.min_rra_window > 0 ? "--additional-rra-parameters '-p ${params.min_rra_window}'" : ''
-    cnv_file = cnv.exists() & parameters.cnv_correction != '' ? "--cnv-norm ${cnv}" : ""
-    cnv_cellline = cnv.exists() & parameters.cnv_correction != '' ? "--cell-line ${parameters.cnv_correction}" : ""
+    cnv_file = file(params.cnv).exists() & parameters.cnv_correction != '' ? "--cnv-norm ${cnv}" : ""
+    cnv_cellline = file(params.cnv).exists() & parameters.cnv_correction != '' ? "--cell-line ${parameters.cnv_correction}" : ""
     """
     prefilter_counts.R \
         ${counts} \
