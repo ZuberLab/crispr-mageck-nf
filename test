@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+PROFILE=${1:-singularity}
+echo "Using profile ${PROFILE}."
+
+nextflow run main.nf \
+    -profile ${PROFILE} \
+    --contrasts test_data/contrasts.txt \
+    --counts test_data/counts_mageck.txt \
+    --cnv test_data/cnv.txt \
+    --outputDir test_output
+
+OBSERVED='test_output/test_normal/genes_neg_stats.txt'
+EXPECTED='test_data/expected_output.txt'
+cmp --silent ${EXPECTED} ${OBSERVED} && \
+    echo '--> SUCCESS: Expected Results!' || echo '--> FAILED: Inconsistent Results!'

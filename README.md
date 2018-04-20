@@ -16,6 +16,16 @@ The most convenient way is to install `crispr-mageck-nf` is to use `nextflow`'s 
 nextflow pull zuberlab/crispr-mageck-nf
 ```
 
+## Test
+Before you start, make sure `nextflow` and `singularity` are properly installed on your system.
+
+Clone git repository from Github and run the pipeline using the provided test data.
+```bash
+git clone https://github.com/ZuberLab/crispr-mageck-nf.git
+cd crispr-mageck-nf
+./test
+```
+
 ## Documentation
 ```bash
 nextflow run zuberlab/crispr-mageck-nf --help

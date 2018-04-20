@@ -1,0 +1,4 @@
+name	control	treatment	norm_method	fdr_method	lfc_method	cnv_correction
+test_normal	control_1,control_2,control_3	treatment_1,treatment_2,treatment_3	median	fdr	mean	CELLLINE_NAME
+test_cnv_incorrect	control_1,control_2,control_3	treatment_1,treatment_2,treatment_3	median	fdr	mean	CELLLINE_NMAE
+test_cnv_missing	control_1,control_2,control_3	treatment_1,treatment_2,treatment_3	median	fdr	mean	
