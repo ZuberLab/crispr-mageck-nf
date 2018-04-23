@@ -13,29 +13,46 @@ def helpMessage() {
      nextflow run zuberlab/crispr-mageck-nf
 
      Options:
-        --contrasts     Tab-delimited text file specifying the contrasts
-                        to be analyzed. (Defaults to 'contrasts.txt')
-                        The following columns are required:
+        --contrasts      Tab-delimited text file specifying the contrasts
+                         to be analyzed. (default: 'contrasts.txt')
+                         The following columns are required:
                             - name: name of contrasts
                             - control: control samples (comma separated)
                             - treatment: treatment samples (comma separated)
                             - norm_method: normalization method
                             - fdr_method: multiple testing adjustment method
                             - lfc_method: method to combine guides / hairpins
-                            - cnv_correction
+                            - cnv_correction: cellline name
 
-        --counts        Tab-delimited test file containing the raw counts.
-                        (Defaults to 'counts_mageck.txt')
-                        This file must conform to the input requirements of
-                        MAGeCK 0.5.7 (http://mageck.sourceforge.net)
+        --counts         Tab-delimited text file containing the raw counts.
+                         (default: 'counts_mageck.txt')
+                         This file must conform to the input requirements of
+                         MAGeCK 0.5.7 (http://mageck.sourceforge.net)
 
-        --outputDir     Directory name to save results to. (Defaults to
-                        '03_stats')
+        --cnv            Tab-delimited text file containing the estimated
+                         copy number per gene. Must be the same as in
+                         'cnv_correction' in 'contrast' file. (default: 'cnv.txt')
+
+        --min_count      Integer specifying the minimal control count to
+                         consider the guide for further analysis. Guides with
+                         lower counts in any control sample will be removed
+                         prior to normalization for the given contrast.
+                         (default: 50)
+
+        --min_rra_window Float between 0 and 1 specifying the mininal fraction
+                         of guides to consider for the RRA rank algorithm.
+                         This overrides the dynamically determined threshold
+                         and will use the same value for both negative and
+                         positive selection. A value of 0 uses the dynamic
+                         thresholding. (default: 0)
+
+        --outputDir      Directory name to save results to. (Defaults to
+                         '03_stats')
 
      Profiles:
-        standard        local execution
-        singularity     local execution with singularity
-        ii2             IMPIMBA2 cluster execution with singularity
+        standard         local execution
+        singularity      local execution with singularity
+        ii2              IMPIMBA2 cluster execution with singularity
 
      Docker:
      zuberlab/crispr-nf:latest
