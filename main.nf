@@ -23,6 +23,7 @@ def helpMessage() {
                             - fdr_method: multiple testing adjustment method
                             - lfc_method: method to combine guides / hairpins
                             - cnv_correction: cellline name
+                            - filter : column to do count filtering on (default if empty: control)
 
         --counts         Tab-delimited text file containing the raw counts.
                          (default: 'counts_mageck.txt')
@@ -109,10 +110,13 @@ process mageck {
     rra_params = params.min_rra_window > 0 ? "--additional-rra-parameters '-p ${params.min_rra_window}'" : ''
     cnv_file = file(params.cnv).exists() & parameters.cnv_correction != '' ? "--cnv-norm ${cnv}" : ""
     cnv_cellline = file(params.cnv).exists() & parameters.cnv_correction != '' ? "--cell-line ${parameters.cnv_correction}" : ""
+    
+    control = params.filter == "" ? params.control : params.filter 
+    
     """
     prefilter_counts.R \
         ${counts} \
-        ${parameters.control} \
+        ${control} \
         ${params.min_count} > counts_filtered.txt
 
     mageck test \
