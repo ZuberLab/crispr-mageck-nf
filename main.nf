@@ -111,7 +111,7 @@ process mageck {
     cnv_file = file(params.cnv).exists() & parameters.cnv_correction != '' ? "--cnv-norm ${cnv}" : ""
     cnv_cellline = file(params.cnv).exists() & parameters.cnv_correction != '' ? "--cell-line ${parameters.cnv_correction}" : ""
     
-    control = params.filter == "" ? params.control : params.filter 
+    control = parameters.filter == "" ? parameters.control : parameters.filter 
     
     """
     prefilter_counts.R \
