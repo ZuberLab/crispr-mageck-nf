@@ -113,25 +113,50 @@ process mageck {
     
     control = parameters.filter == "" ? parameters.control : parameters.filter 
     
-    """
-    prefilter_counts.R \
-        ${counts} \
-        ${control} \
-        ${params.min_count} > counts_filtered.txt
-
-    mageck test \
-        --output-prefix ${parameters.name} \
-        --count-table counts_filtered.txt \
-        --control-id ${parameters.control} \
-        --treatment-id ${parameters.treatment} \
-        --norm-method ${parameters.norm_method} \
-        --adjust-method ${parameters.fdr_method} \
-        --gene-lfc-method ${parameters.lfc_method} \
-        --normcounts-to-file \
-        ${rra_params} \
-        ${cnv_file} \
-        ${cnv_cellline}
-    """
+    if( parameters.norm_method == "quantile" )
+    
+	    """
+	    prefilter_counts.R \
+	        ${counts} \
+	        ${control} \
+	        ${params.min_count} > counts_filtered.txt
+	        
+	    quantile_normalize_counts.R \
+	        counts_filtered.txt > counts_quantile_normalized.txt
+	
+	    mageck test \
+	        --output-prefix ${parameters.name} \
+	        --count-table counts_quantile_normalized.txt \
+	        --control-id ${parameters.control} \
+	        --treatment-id ${parameters.treatment} \
+	        --norm-method none \
+	        --adjust-method ${parameters.fdr_method} \
+	        --gene-lfc-method ${parameters.lfc_method} \
+	        --normcounts-to-file \
+	        ${rra_params} \
+	        ${cnv_file} \
+	        ${cnv_cellline}
+	    """
+	else
+	    """
+	    prefilter_counts.R \
+	        ${counts} \
+	        ${control} \
+	        ${params.min_count} > counts_filtered.txt
+	
+	    mageck test \
+	        --output-prefix ${parameters.name} \
+	        --count-table counts_filtered.txt \
+	        --control-id ${parameters.control} \
+	        --treatment-id ${parameters.treatment} \
+	        --norm-method ${parameters.norm_method} \
+	        --adjust-method ${parameters.fdr_method} \
+	        --gene-lfc-method ${parameters.lfc_method} \
+	        --normcounts-to-file \
+	        ${rra_params} \
+	        ${cnv_file} \
+	        ${cnv_cellline}
+	    """
 }
 
 process postprocess {
