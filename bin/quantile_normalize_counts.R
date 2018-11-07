@@ -24,24 +24,6 @@ args        <- commandArgs(trailingOnly = TRUE)
 file_counts <- args[1]
 
 # ------------------------------------------------------------------------------
-# functions
-# ------------------------------------------------------------------------------
-# prefilter_counts
-prefilter_counts <- function(df, cols, min_count = 50) {
-  
-  if (!length(intersect(cols, names(df))) == length(cols)) {
-    stop("`cols` not in column names of count matrix", call. = FALSE)
-  }
-  
-  if (!all(sapply(df[, cols], is.numeric))) {
-    stop("`cols` contains non-numeric columns", call. = FALSE)
-  }
-  
-  df %>%
-    dplyr::filter_at(vars(cols), all_vars(. >= min_count))
-}
-
-# ------------------------------------------------------------------------------
 # process
 # ------------------------------------------------------------------------------
 
