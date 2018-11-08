@@ -99,8 +99,7 @@ process mageck {
                    else null
                }
                
-    if( params.legacy )
-    	container = 'zuberlab/crispr-nf:0.5.5'
+    if( params.legacy ) { container = 'zuberlab/crispr-nf:0.5.5' }
     
     input:
     val(parameters) from contrastsMageck
