@@ -98,9 +98,7 @@ process mageck {
                    else if (filename.indexOf(".normalized.txt") > 0) "$filename"
                    else null
                }
-               
-    if( params.legacy ) { container = 'zuberlab/crispr-nf:0.5.5' }
-    
+                   
     input:
     val(parameters) from contrastsMageck
     each file(counts) from countsMageck
