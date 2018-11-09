@@ -129,7 +129,7 @@ process mageck {
 	        
 	    VERSION=\$(mageck -v)
 	    
-	    if [ "$VERSION" = "0.5.5" ]; then
+	    if [ "\$VERSION" = "0.5.5" ]; then
 	
 		    mageck test \
 		        --output-prefix ${parameters.name} \
@@ -165,7 +165,7 @@ process mageck {
 	        
 	    VERSION=\$(mageck -v)
 	    
-	    if [ "$VERSION" = "0.5.5" ]; then
+	    if [ "\$VERSION" = "0.5.5" ]; then
 	
 		    mageck test \
 		        --output-prefix ${parameters.name} \
