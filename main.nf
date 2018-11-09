@@ -127,9 +127,9 @@ process mageck {
 	    quantile_normalize_counts.R \
 	        counts_filtered.txt > counts_quantile_normalized.txt
 	        
-	    VERSION=\$(mageck -v)
+	    VERSION=\$(mageck -v 2>&1 >/dev/null)
 	    
-	    if [ "\$VERSION" = "0.5.5" ]; then
+	    if [ \$VERSION = "0.5.5" ]; then
 	
 		    mageck test \
 		        --output-prefix ${parameters.name} \
@@ -163,9 +163,9 @@ process mageck {
 	        ${control} \
 	        ${params.min_count} > counts_filtered.txt
 	        
-	    VERSION=\$(mageck -v)
+	    VERSION=\$(mageck -v 2>&1 >/dev/null)
 	    
-	    if [ "\$VERSION" = "0.5.5" ]; then
+	    if [ \$VERSION = "0.5.5" ]; then
 	
 		    mageck test \
 		        --output-prefix ${parameters.name} \
