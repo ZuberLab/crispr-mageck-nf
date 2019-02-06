@@ -26,7 +26,6 @@ controls    <- args[2]
 min_count   <- args[3]
 
 # format command line arguments
-controls  <- unlist(strsplit(controls, split = ","))
 min_count <- as.integer(min_count)
 
 # ------------------------------------------------------------------------------
@@ -36,6 +35,8 @@ min_count <- as.integer(min_count)
 prefilter_counts <- function(df, cols, min_count = 50) {
 	
   if (length(grep(",",cols)) > 0) {
+	  
+	  cols  <- unlist(strsplit(cols, split = ","))
   
 	  if (!length(intersect(cols, names(df))) == length(cols)) {
 	    stop("`cols` not in column names of count matrix", call. = FALSE)
