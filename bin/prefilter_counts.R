@@ -17,6 +17,7 @@ library(readr)
 library(stringr)
 library(dplyr)
 library(tidyr)
+library(rlang)
 
 # command line arguments
 args        <- commandArgs(trailingOnly = TRUE)
@@ -33,17 +34,28 @@ min_count <- as.integer(min_count)
 # ------------------------------------------------------------------------------
 # prefilter_counts
 prefilter_counts <- function(df, cols, min_count = 50) {
+	
+  if (length(grep(",",cols)) > 0) {
   
-  if (!length(intersect(cols, names(df))) == length(cols)) {
-    stop("`cols` not in column names of count matrix", call. = FALSE)
+	  if (!length(intersect(cols, names(df))) == length(cols)) {
+	    stop("`cols` not in column names of count matrix", call. = FALSE)
+	  }
+	  
+	  if (!all(sapply(df[, cols], is.numeric))) {
+	    stop("`cols` contains non-numeric columns", call. = FALSE)
+	  }
+	  
+	  df %>%
+	    dplyr::filter_at(vars(cols), all_vars(. >= min_count))
+
+  } else {
+	  
+	  df %>%
+	    dplyr::mutate(res := !!parse_quosure(cols)) %>%
+        dplyr::filter(res >= min_count) %>% 
+		dplyr::select(-res)
+	  
   }
-  
-  if (!all(sapply(df[, cols], is.numeric))) {
-    stop("`cols` contains non-numeric columns", call. = FALSE)
-  }
-  
-  df %>%
-    dplyr::filter_at(vars(cols), all_vars(. >= min_count))
 }
 
 # ------------------------------------------------------------------------------
