@@ -25,6 +25,8 @@ file_counts <- args[1]
 controls    <- args[2]
 min_count   <- args[3]
 
+print(controls)
+
 # format command line arguments
 min_count <- as.integer(min_count)
 
@@ -34,7 +36,7 @@ min_count <- as.integer(min_count)
 # prefilter_counts
 prefilter_counts <- function(df, cols, min_count = 50) {
 	
-  if (length(grep(",",cols)) > 0 && length(grep("(",cols)) == 0) {
+  if (length(grep(",",cols)) > 0 && length(grep("\\(",cols)) == 0) {
 	  
 	  cols  <- unlist(strsplit(cols, split = ","))
   
