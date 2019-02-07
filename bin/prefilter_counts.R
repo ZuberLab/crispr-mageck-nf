@@ -25,8 +25,6 @@ file_counts <- args[1]
 controls    <- args[2]
 min_count   <- args[3]
 
-print(controls)
-
 # format command line arguments
 min_count <- as.integer(min_count)
 
