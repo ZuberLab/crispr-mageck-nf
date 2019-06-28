@@ -24,7 +24,7 @@ def helpMessage() {
                             - lfc_method: method to combine guides / hairpins
                             - cnv_correction: cellline name
                             - filter : column to do count filtering on (default if empty: control)
-                            
+
         --legacy         Run Legacy MAGeCK 0.5.5
 
         --counts         Tab-delimited text file containing the raw counts.
@@ -98,7 +98,7 @@ process mageck {
                    else if (filename.indexOf(".normalized.txt") > 0) "$filename"
                    else null
                }
-                   
+
     input:
     val(parameters) from contrastsMageck
     each file(counts) from countsMageck
@@ -110,27 +110,28 @@ process mageck {
     file('*.normalized.txt') into normalizedMageck
 
     script:
+    variance_params = parameters.variance_estimation ? "--variance-estimation-samples ${parameters.variance_estimation}" : ''
     rra_params = params.min_rra_window > 0 ? "--additional-rra-parameters '-p ${params.min_rra_window}'" : ''
     cnv_file = file(params.cnv).exists() & parameters.cnv_correction != '' ? "--cnv-norm ${cnv}" : ""
     cnv_cellline = file(params.cnv).exists() & parameters.cnv_correction != '' ? "--cell-line ${parameters.cnv_correction}" : ""
-    
-    control = parameters.filter == "" ? parameters.control : parameters.filter 
-    
+
+    control = parameters.filter == "" ? parameters.control : parameters.filter
+
     if( parameters.norm_method == "quantile" )
-    
+
 	    """
 	    prefilter_counts.R \
 	        ${counts} \
 	        ${control} \
 	        ${params.min_count} > counts_filtered.txt
-	        
+
 	    quantile_normalize_counts.R \
 	        counts_filtered.txt > counts_quantile_normalized.txt
-	        
+
 	    VERSION=\$(mageck -v 2>&1 >/dev/null)
-	    
+
 	    if [ \$VERSION = "0.5.5" ]; then
-	
+
 		    mageck test \
 		        --output-prefix ${parameters.name} \
 		        --count-table counts_quantile_normalized.txt \
@@ -140,7 +141,7 @@ process mageck {
 		        --adjust-method ${parameters.fdr_method} \
 		        --gene-lfc-method ${parameters.lfc_method} \
 		        --normcounts-to-file
-	        
+
 	    else
 		    mageck test \
 			        --output-prefix ${parameters.name} \
@@ -151,6 +152,7 @@ process mageck {
 			        --adjust-method ${parameters.fdr_method} \
 			        --gene-lfc-method ${parameters.lfc_method} \
 			        --normcounts-to-file \
+              ${variance_params} \
 			        ${rra_params} \
 			        ${cnv_file} \
 			        ${cnv_cellline}
@@ -162,11 +164,11 @@ process mageck {
 	        ${counts} \
 	        ${control} \
 	        ${params.min_count} > counts_filtered.txt
-	        
+
 	    VERSION=\$(mageck -v 2>&1 >/dev/null)
-	    
+
 	    if [ \$VERSION = "0.5.5" ]; then
-	
+
 		    mageck test \
 		        --output-prefix ${parameters.name} \
 		        --count-table counts_filtered.txt \
@@ -175,7 +177,7 @@ process mageck {
 		        --norm-method ${parameters.norm_method} \
 		        --adjust-method ${parameters.fdr_method} \
 		        --gene-lfc-method ${parameters.lfc_method} \
-		        --normcounts-to-file 	        
+		        --normcounts-to-file
 	    else
 		    mageck test \
 		        --output-prefix ${parameters.name} \
@@ -186,6 +188,7 @@ process mageck {
 		        --adjust-method ${parameters.fdr_method} \
 		        --gene-lfc-method ${parameters.lfc_method} \
 		        --normcounts-to-file \
+            ${variance_params} \
 		        ${rra_params} \
 		        ${cnv_file} \
 		        ${cnv_cellline}
