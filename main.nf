@@ -133,7 +133,7 @@ process mageck {
 
 	    prefilter_counts.R \
 	        ${counts} \
-	        \${ctrl_string_buff} \
+	        \${ctrl_string} \
           ${parameters.treatment} \
 	        0 > counts_filtered.txt
 
@@ -185,7 +185,7 @@ process mageck {
 
 	    prefilter_counts.R \
 	        ${counts} \
-	        \${ctrl_string_buff} \
+	        \${ctrl_string} \
           ${parameters.treatment} \
 	        0 > counts_filtered.txt
 
