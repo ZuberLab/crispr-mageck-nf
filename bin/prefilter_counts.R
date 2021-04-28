@@ -23,7 +23,8 @@ library(rlang)
 args        <- commandArgs(trailingOnly = TRUE)
 file_counts <- args[1]
 controls    <- args[2]
-min_count   <- args[3]
+treatments  <- args[3]
+min_count   <- args[4]
 
 # format command line arguments
 min_count <- as.integer(min_count)
@@ -62,8 +63,12 @@ prefilter_counts <- function(df, cols, min_count = 50) {
 # ------------------------------------------------------------------------------
 # process
 # ------------------------------------------------------------------------------
-read_tsv(file_counts) %>%
+ctrl  <- unlist(strsplit(controls, split = ","))
+trmnt  <- unlist(strsplit(treatments, split = ","))
+readr::read_tsv(file_counts) %>%
+  dplyr::select(c(1,2), ctrl, trmnt) %>%
   prefilter_counts(cols = controls, min_count = min_count) %>%
+  tidyr::drop_na() %>%
   format_tsv %>%
   cat
   

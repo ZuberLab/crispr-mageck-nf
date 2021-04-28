@@ -120,10 +120,22 @@ process mageck {
     if( parameters.norm_method == "quantile" )
 
 	    """
+      IFS=',' read -ra CTRL <<< "${parameters.control}"
+      ctrl_string=""
+      for i in "\${CTRL[@]}"; do
+        if [ "\${ctrl_string}" == "" ]; then
+          ctrl_string_buff="\${i}_ref_${parameters.name}"
+        else
+          ctrl_string_buff=",\${i}_ref_${parameters.name}"
+        fi
+        ctrl_string="\${ctrl_string}\${ctrl_string_buff}"
+      done
+
 	    prefilter_counts.R \
 	        ${counts} \
-	        ${control} \
-	        ${params.min_count} > counts_filtered.txt
+	        \${ctrl_string_buff} \
+          ${parameters.treatment} \
+	        0 > counts_filtered.txt
 
 	    quantile_normalize_counts.R \
 	        counts_filtered.txt > counts_quantile_normalized.txt
@@ -135,7 +147,7 @@ process mageck {
 		    mageck test \
 		        --output-prefix ${parameters.name} \
 		        --count-table counts_quantile_normalized.txt \
-		        --control-id ${parameters.control} \
+		        --control-id \${ctrl_string_buff} \
 		        --treatment-id ${parameters.treatment} \
 		        --norm-method none \
 		        --adjust-method ${parameters.fdr_method} \
@@ -146,7 +158,7 @@ process mageck {
 		    mageck test \
 			        --output-prefix ${parameters.name} \
 			        --count-table counts_quantile_normalized.txt \
-			        --control-id ${parameters.control} \
+			        --control-id \${ctrl_string_buff} \
 			        --treatment-id ${parameters.treatment} \
 			        --norm-method none \
 			        --adjust-method ${parameters.fdr_method} \
@@ -160,10 +172,22 @@ process mageck {
 	    """
 	else
 	    """
+      IFS=',' read -ra CTRL <<< "${parameters.control}"
+      ctrl_string=""
+      for i in "\${CTRL[@]}"; do
+        if [ "\${ctrl_string}" == "" ]; then
+          ctrl_string_buff="\${i}_ref_${parameters.name}"
+        else
+          ctrl_string_buff=",\${i}_ref_${parameters.name}"
+        fi
+        ctrl_string="\${ctrl_string}\${ctrl_string_buff}"
+      done
+
 	    prefilter_counts.R \
 	        ${counts} \
-	        ${control} \
-	        ${params.min_count} > counts_filtered.txt
+	        \${ctrl_string_buff} \
+          ${parameters.treatment} \
+	        0 > counts_filtered.txt
 
 	    VERSION=\$(mageck -v 2>&1 >/dev/null)
 
@@ -172,9 +196,9 @@ process mageck {
 		    mageck test \
 		        --output-prefix ${parameters.name} \
 		        --count-table counts_filtered.txt \
-		        --control-id ${parameters.control} \
+		        --control-id \${ctrl_string} \
 		        --treatment-id ${parameters.treatment} \
-		        --norm-method ${parameters.norm_method} \
+		        --norm-method none \
 		        --adjust-method ${parameters.fdr_method} \
 		        --gene-lfc-method ${parameters.lfc_method} \
 		        --normcounts-to-file
@@ -182,9 +206,9 @@ process mageck {
 		    mageck test \
 		        --output-prefix ${parameters.name} \
 		        --count-table counts_filtered.txt \
-		        --control-id ${parameters.control} \
+		        --control-id \${ctrl_string} \
 		        --treatment-id ${parameters.treatment} \
-		        --norm-method ${parameters.norm_method} \
+		        --norm-method none \
 		        --adjust-method ${parameters.fdr_method} \
 		        --gene-lfc-method ${parameters.lfc_method} \
 		        --normcounts-to-file \
