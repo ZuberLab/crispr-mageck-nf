@@ -42,6 +42,8 @@ def helpMessage() {
                          prior to normalization for the given contrast.
                          (default: 50)
 
+        --estimate_min_count_from_samples: boolean indicating if min required counts for filtering should be estimated from the samples (> 5% of the mean count)
+
         --min_rra_window Float between 0 and 1 specifying the mininal fraction
                          of guides to consider for the RRA rank algorithm.
                          This overrides the dynamically determined threshold
@@ -51,6 +53,8 @@ def helpMessage() {
 
         --outputDir      Directory name to save results to. (Defaults to
                          '03_stats')
+
+        --control_sgRNAs: txt file that contains sgRNA-ids to be used by mageck  for normalization and for generating the null distribution of RRA
 
      Profiles:
         standard         local execution
@@ -86,6 +90,10 @@ Channel
     .fromPath( params.cnv )
     .set { cnvMageck }
 
+Channel
+    .fromPath( params.control_sgRNAs )
+    .set { ctrlsgRNAs }
+
 process mageck {
 
     tag { parameters.name }
@@ -103,6 +111,7 @@ process mageck {
     val(parameters) from contrastsMageck
     each file(counts) from countsMageck
     each file(cnv) from cnvMageck
+    each file(ctrl) from ctrlsgRNAs
 
     output:
     set val("${parameters.name}"), file('*.sgrna_summary.txt'), file('*.gene_summary.txt') into resultsMageck
@@ -114,6 +123,9 @@ process mageck {
     rra_params = params.min_rra_window > 0 ? "--additional-rra-parameters '-p ${params.min_rra_window}'" : ''
     cnv_file = file(params.cnv).exists() & parameters.cnv_correction != '' ? "--cnv-norm ${cnv}" : ""
     cnv_cellline = file(params.cnv).exists() & parameters.cnv_correction != '' ? "--cell-line ${parameters.cnv_correction}" : ""
+    control_sgRNAs = params.control_sgRNAs != '' & file(params.control_sgRNAs).exists() ? "--control-sgrna ${ctrl}" : ''
+    norm_method = params.control_sgRNAs != '' & file(params.control_sgRNAs).exists() ? "control" : "${parameters.norm_method}"
+    estimate_min_count_from_samples  = params.estimate_min_count_from_samples ? 1 : 0
 
     control = parameters.filter == "" ? parameters.control : parameters.filter
 
@@ -123,7 +135,8 @@ process mageck {
 	    prefilter_counts.R \
 	        ${counts} \
 	        ${control} \
-	        ${params.min_count} > counts_filtered.txt
+	        ${params.min_count} \
+          ${estimate_min_count_from_samples} > counts_filtered.txt
 
 	    quantile_normalize_counts.R \
 	        counts_filtered.txt > counts_quantile_normalized.txt
@@ -140,7 +153,8 @@ process mageck {
 		        --norm-method none \
 		        --adjust-method ${parameters.fdr_method} \
 		        --gene-lfc-method ${parameters.lfc_method} \
-		        --normcounts-to-file
+		        --normcounts-to-file \
+            ${control_sgRNAs} \
 
 	    else
 		    mageck test \
@@ -152,6 +166,7 @@ process mageck {
 			        --adjust-method ${parameters.fdr_method} \
 			        --gene-lfc-method ${parameters.lfc_method} \
 			        --normcounts-to-file \
+              ${control_sgRNAs} \
               ${variance_params} \
 			        ${rra_params} \
 			        ${cnv_file} \
@@ -163,7 +178,8 @@ process mageck {
 	    prefilter_counts.R \
 	        ${counts} \
 	        ${control} \
-	        ${params.min_count} > counts_filtered.txt
+	        ${params.min_count} \
+          ${estimate_min_count_from_samples} > counts_filtered.txt
 
 	    VERSION=\$(mageck -v 2>&1 >/dev/null)
 
@@ -174,20 +190,22 @@ process mageck {
 		        --count-table counts_filtered.txt \
 		        --control-id ${parameters.control} \
 		        --treatment-id ${parameters.treatment} \
-		        --norm-method ${parameters.norm_method} \
+		        --norm-method ${norm_method} \
 		        --adjust-method ${parameters.fdr_method} \
 		        --gene-lfc-method ${parameters.lfc_method} \
-		        --normcounts-to-file
+		        --normcounts-to-file \
+            ${control_sgRNAs}
 	    else
 		    mageck test \
 		        --output-prefix ${parameters.name} \
 		        --count-table counts_filtered.txt \
 		        --control-id ${parameters.control} \
 		        --treatment-id ${parameters.treatment} \
-		        --norm-method ${parameters.norm_method} \
+		        --norm-method ${norm_method} \
 		        --adjust-method ${parameters.fdr_method} \
 		        --gene-lfc-method ${parameters.lfc_method} \
 		        --normcounts-to-file \
+            ${control_sgRNAs} \
             ${variance_params} \
 		        ${rra_params} \
 		        ${cnv_file} \

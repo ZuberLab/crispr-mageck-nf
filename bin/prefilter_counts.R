@@ -24,16 +24,16 @@ args        <- commandArgs(trailingOnly = TRUE)
 file_counts <- args[1]
 controls    <- args[2]
 min_count   <- args[3]
+estimate_min_count_from_samples   <- args[4]
 
 # format command line arguments
 min_count <- as.integer(min_count)
-
+estimate_min_count_from_samples <- as.integer(estimate_min_count_from_samples)
 # ------------------------------------------------------------------------------
 # functions
 # ------------------------------------------------------------------------------
 # prefilter_counts
-prefilter_counts <- function(df, cols, min_count = 50) {
-	
+prefilter_counts <- function(df, cols, min_count = 50, estimate_min_count_from_samples=1) {
   if (length(grep(",",cols)) > 0 && length(grep("\\(",cols)) == 0) {
 	  
 	  cols  <- unlist(strsplit(cols, split = ","))
@@ -46,10 +46,21 @@ prefilter_counts <- function(df, cols, min_count = 50) {
 	    stop("`cols` contains non-numeric columns", call. = FALSE)
 	  }
 	  
+	  if(estimate_min_count_from_samples==1){
+	    #calc min counts for filtering: 10% of the avergae counts 
+	    min_count <- round((sum(df[,match(cols,names(df))], na.rm = TRUE)/length(cols) /nrow(df)) * 0.05)
+	  }
+	  
 	  df %>%
 	    dplyr::filter_at(vars(cols), all_vars(. >= min_count))
 
   } else {
+    
+    if(estimate_min_count_from_samples==1){
+      cols_buff  <- stringr::str_replace(pattern = "pmax\\(|\\)", string =unlist(strsplit(cols, split = ",")), replacement = "")
+      #calc min counts for filtering: 10% of the avergae counts 
+      min_count <- round((sum(df[,match(cols_buff,names(df))], na.rm = TRUE)/length(cols_buff) /nrow(df)) * 0.05)
+    }
 	  
 	  df %>%
 	    dplyr::mutate(res := !!parse_quosure(cols)) %>%
@@ -63,7 +74,7 @@ prefilter_counts <- function(df, cols, min_count = 50) {
 # process
 # ------------------------------------------------------------------------------
 read_tsv(file_counts) %>%
-  prefilter_counts(cols = controls, min_count = min_count) %>%
+  prefilter_counts(cols = controls, min_count = min_count, estimate_min_count_from_samples=estimate_min_count_from_samples) %>%
   format_tsv %>%
   cat
   
