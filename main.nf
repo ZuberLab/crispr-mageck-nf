@@ -42,7 +42,8 @@ def helpMessage() {
                          prior to normalization for the given contrast.
                          (default: 50)
 
-        --estimate_min_count_from_samples: boolean indicating if min required counts for filtering should be estimated from the samples (> 5% of the mean count)
+        --estimate_min_count_from_samples:  boolean indicating if min required counts for filtering
+                                            should be estimated from the samples (> 5% of the mean count)
 
         --min_rra_window Float between 0 and 1 specifying the mininal fraction
                          of guides to consider for the RRA rank algorithm.
@@ -54,7 +55,8 @@ def helpMessage() {
         --outputDir      Directory name to save results to. (Defaults to
                          '03_stats')
 
-        --control_sgRNAs: txt file that contains sgRNA-ids to be used by mageck  for normalization and for generating the null distribution of RRA
+        --control_sgRNAs: txt file that contains sgRNA-ids to be used by mageck for normalization
+                          and for generating the null distribution of RRA
 
      Profiles:
         standard         local execution
@@ -66,6 +68,7 @@ def helpMessage() {
 
      Author:
      Jesse J. Lipp (jesse.lipp@imp.ac.at)
+     Florian Andersch (florian.andersch@imp.ac.at)
 
     """.stripIndent()
 }
