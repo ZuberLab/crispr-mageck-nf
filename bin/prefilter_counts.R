@@ -47,8 +47,13 @@ prefilter_counts <- function(df, cols, min_count = 50, estimate_min_count_from_s
 	  }
 	  
 	  if(estimate_min_count_from_samples==1){
-	    #calc min counts for filtering: 10% of the avergae counts 
-	    min_count <- round((sum(df[,match(cols,names(df))], na.rm = TRUE)/length(cols) /nrow(df)) * 0.05)
+	    #calc min counts for filtering: 5% of median counts 
+	    
+	    #mean version: 
+	    #min_count <- round((sum(df[,match(cols,names(df))], na.rm = TRUE)/length(cols) /nrow(df)) * 0.05)
+	    
+	    #median
+	    min_count <- round((median(rowSums(df[,match(cols,names(df))], na.rm = TRUE)/length(cols)) * 0.05))
 	  }
 	  
 	  df %>%
@@ -58,8 +63,13 @@ prefilter_counts <- function(df, cols, min_count = 50, estimate_min_count_from_s
     
     if(estimate_min_count_from_samples==1){
       cols_buff  <- stringr::str_replace(pattern = "pmax\\(|\\)", string =unlist(strsplit(cols, split = ",")), replacement = "")
-      #calc min counts for filtering: 10% of the avergae counts 
-      min_count <- round((sum(df[,match(cols_buff,names(df))], na.rm = TRUE)/length(cols_buff) /nrow(df)) * 0.05)
+      #calc min counts for filtering: 5% of median counts 
+      
+      #mean version: 
+      #min_count <- round((sum(df[,match(cols_buff,names(df))], na.rm = TRUE)/length(cols_buff) /nrow(df)) * 0.05)
+      
+      #median
+      min_count <- round((median(rowSums(df[,match(cols_buff,names(df))], na.rm = TRUE)/length(cols_buff)) * 0.05))
     }
 	  
 	  df %>%
