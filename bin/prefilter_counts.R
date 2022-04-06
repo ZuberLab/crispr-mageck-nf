@@ -54,6 +54,8 @@ prefilter_counts <- function(df, cols, min_count = 50, estimate_min_count_from_s
 	    
 	    #median
 	    min_count <- round((median(rowSums(df[,match(cols,names(df))], na.rm = TRUE)/length(cols)) * 0.05))
+	    message(paste0("Filter for >= ", min_count, " counts in reference sample."))
+	    
 	  }
 	  
 	  df %>%
@@ -70,6 +72,8 @@ prefilter_counts <- function(df, cols, min_count = 50, estimate_min_count_from_s
       
       #median
       min_count <- round((median(rowSums(df[,match(cols_buff,names(df))], na.rm = TRUE)/length(cols_buff)) * 0.05))
+      message(paste0("Filter for >= ", min_count, " counts in reference sample."))
+      
     }
 	  
 	  df %>%
