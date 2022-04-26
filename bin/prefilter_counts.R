@@ -76,10 +76,13 @@ prefilter_counts <- function(df, cols, min_count = 50, estimate_min_count_from_s
       
     }
 	  
-	  df %>%
-	    dplyr::mutate(res := !!parse_quosure(cols)) %>%
-        dplyr::filter(res >= min_count) %>% 
-		dplyr::select(-res)
+	  buff <- df %>%
+	    dplyr::filter_at(vars(cols), all_vars(. >= min_count))
+# 	    dplyr::mutate(res := !!parse_quosure(cols)) %>%
+#       dplyr::filter(res >= min_count) %>% 
+# 	    dplyr::select(-res)
+	  
+	  buff[,colSums(is.na(buff))==0]
 	  
   }
 }
