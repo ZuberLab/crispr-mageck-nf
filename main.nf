@@ -130,16 +130,22 @@ process mageck {
     norm_method = params.control_sgRNAs != '' & file(params.control_sgRNAs).exists() ? "control" : "${parameters.norm_method}"
     estimate_min_count_from_samples  = params.estimate_min_count_from_samples ? 1 : 0
 
-    control = parameters.filter == "" ? parameters.control : parameters.filter
+    filter = parameters.filter != "" & parameters.filter != null ? parameters.filter : parameters.control
+    control = parameters.control != "" ? parameters.control : "empty"
+    treatment = parameters.treatment != "" ? parameters.treatment : "empty"
+    variance = parameters.variance_estimation != "" & parameters.variance_estimation != null ? parameters.variance_estimation : "empty"
 
     if( parameters.norm_method == "quantile" )
 
 	    """
 	    prefilter_counts.R \
 	        ${counts} \
-	        ${control} \
+	        ${filter} \
 	        ${params.min_count} \
-          ${estimate_min_count_from_samples} > counts_filtered.txt
+          ${estimate_min_count_from_samples} \
+          ${control} \
+          ${treatment} \
+          ${variance}  > counts_filtered.txt
 
 	    quantile_normalize_counts.R \
 	        counts_filtered.txt > counts_quantile_normalized.txt
@@ -178,11 +184,14 @@ process mageck {
 	    """
 	else
 	    """
-	    prefilter_counts.R \
+      prefilter_counts.R \
 	        ${counts} \
-	        ${control} \
+	        ${filter} \
 	        ${params.min_count} \
-          ${estimate_min_count_from_samples} > counts_filtered.txt
+          ${estimate_min_count_from_samples} \
+          ${control} \
+          ${treatment} \
+          ${variance}  > counts_filtered.txt
 
 	    VERSION=\$(mageck -v 2>&1 >/dev/null)
 

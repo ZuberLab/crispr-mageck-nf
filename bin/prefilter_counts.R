@@ -18,13 +18,15 @@ library(stringr)
 library(dplyr)
 library(tidyr)
 library(rlang)
-
 # command line arguments
 args        <- commandArgs(trailingOnly = TRUE)
 file_counts <- args[1]
 controls    <- args[2]
 min_count   <- args[3]
 estimate_min_count_from_samples   <- args[4]
+control_sample_id   <- args[5]
+treat_sample_id   <- args[6]
+variance_sample_id   <- args[7]
 
 # format command line arguments
 min_count <- as.integer(min_count)
@@ -75,13 +77,14 @@ prefilter_counts <- function(df, cols, min_count = 50, estimate_min_count_from_s
       message(paste0("Filter for >= ", min_count, " counts in reference sample."))
       
     }
-	  
+
 	  buff <- df %>%
 	    dplyr::mutate(res := !!parse_quosure(cols)) %>%
       dplyr::filter(res >= min_count) %>%
 	    dplyr::select(-res)
 	  
-	  buff[,colSums(is.na(buff))==0]
+	  #remove rows where there is NA instead of count (avoid errors with mageck)
+	  buff[rowSums(is.na(buff))==0,]
 	  
   }
 }
@@ -89,7 +92,15 @@ prefilter_counts <- function(df, cols, min_count = 50, estimate_min_count_from_s
 # ------------------------------------------------------------------------------
 # process
 # ------------------------------------------------------------------------------
-read_tsv(file_counts) %>%
+#get all needed columns
+columns<-c("id", "group", unlist(strsplit(controls, split = ",")), unlist(strsplit(control_sample_id, split = ",")),unlist(strsplit(treat_sample_id, split = ",")),unlist(strsplit(variance_sample_id, split = ",")))
+#remove undefined columns
+columns <- columns[!columns == "empty"] %>% unique
+counts <- read_tsv(file_counts)
+#select needed columns
+counts<-counts[, columns]
+#filter
+counts %>%
   prefilter_counts(cols = controls, min_count = min_count, estimate_min_count_from_samples=estimate_min_count_from_samples) %>%
   format_tsv %>%
   cat
