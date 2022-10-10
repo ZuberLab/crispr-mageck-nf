@@ -93,7 +93,8 @@ prefilter_counts <- function(df, cols, min_count = 50, estimate_min_count_from_s
 # process
 # ------------------------------------------------------------------------------
 #get all needed columns
-columns<-c("id", "group", unlist(strsplit(controls, split = ",")), unlist(strsplit(control_sample_id, split = ",")),unlist(strsplit(treat_sample_id, split = ",")),unlist(strsplit(variance_sample_id, split = ",")))
+filter_cols  <- stringr::str_replace(pattern = "pmax\\(|\\)", string =unlist(strsplit(controls, split = ",")), replacement = "")
+columns<-c("id", "group", unlist(filter_cols),unlist(strsplit(treat_sample_id, split = ",")),unlist(strsplit(variance_sample_id, split = ",")))
 #remove undefined columns
 columns <- columns[!columns == "empty"] %>% unique
 counts <- read_tsv(file_counts)
