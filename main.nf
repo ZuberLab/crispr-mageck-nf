@@ -126,8 +126,7 @@ process mageck {
     rra_params = params.min_rra_window > 0 ? "--additional-rra-parameters '-p ${params.min_rra_window}'" : ''
     cnv_file = file(params.cnv).exists() & parameters.cnv_correction != '' ? "--cnv-norm ${cnv}" : ""
     cnv_cellline = file(params.cnv).exists() & parameters.cnv_correction != '' ? "--cell-line ${parameters.cnv_correction}" : ""
-    control_sgRNAs = params.control_sgRNAs != '' & file(params.control_sgRNAs).exists() ? "--control-sgrna ${ctrl}" : ''
-    norm_method = params.control_sgRNAs != '' & file(params.control_sgRNAs).exists() ? "control" : "${parameters.norm_method}"
+    control_sgRNAs = parameters.gene_level_statistics == 'control_sgRNAs' & file(params.control_sgRNAs).exists() ? "--control-sgrna ${ctrl}" : ''
     estimate_min_count_from_samples  = params.estimate_min_count_from_samples ? 1 : 0
 
     filter = parameters.filter != "" & parameters.filter != null ? parameters.filter : parameters.control
@@ -202,7 +201,7 @@ process mageck {
 		        --count-table counts_filtered.txt \
 		        --control-id ${parameters.control} \
 		        --treatment-id ${parameters.treatment} \
-		        --norm-method ${norm_method} \
+		        --norm-method ${parameters.norm_method} \
 		        --adjust-method ${parameters.fdr_method} \
 		        --gene-lfc-method ${parameters.lfc_method} \
 		        --normcounts-to-file \
@@ -213,7 +212,7 @@ process mageck {
 		        --count-table counts_filtered.txt \
 		        --control-id ${parameters.control} \
 		        --treatment-id ${parameters.treatment} \
-		        --norm-method ${norm_method} \
+		        --norm-method ${parameters.norm_method} \
 		        --adjust-method ${parameters.fdr_method} \
 		        --gene-lfc-method ${parameters.lfc_method} \
 		        --normcounts-to-file \
