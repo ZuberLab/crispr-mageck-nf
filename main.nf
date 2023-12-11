@@ -25,8 +25,6 @@ def helpMessage() {
                             - cnv_correction: cellline name
                             - filter : column to do count filtering on (default if empty: control)
 
-        --legacy         Run Legacy MAGeCK 0.5.5
-
         --counts         Tab-delimited text file containing the raw counts.
                          (default: 'counts_mageck.txt')
                          This file must conform to the input requirements of
