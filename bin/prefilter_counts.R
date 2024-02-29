@@ -100,6 +100,10 @@ columns <- columns[!columns == "empty"] %>% unique
 counts <- read_tsv(file_counts)
 #select needed columns
 counts<-counts[, columns]
+#filter non-represented guides
+data <- counts %>% dplyr::select(-id, -group)
+index_represented <- rowMeans(data) > 0
+counts <- counts[index_represented,]
 #filter
 counts %>%
   prefilter_counts(cols = controls, min_count = min_count, estimate_min_count_from_samples=estimate_min_count_from_samples) %>%
