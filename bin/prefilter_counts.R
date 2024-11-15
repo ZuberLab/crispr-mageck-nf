@@ -79,7 +79,7 @@ prefilter_counts <- function(df, cols, min_count = 50, estimate_min_count_from_s
     }
 
 	  buff <- df %>%
-	    dplyr::mutate(res := !!parse_quo(cols, env = global_env())) %>%
+	    dplyr::mutate(res := !!parse_quosure(cols, env = global_env())) %>%
       dplyr::filter(res >= min_count) %>%
 	    dplyr::select(-res)
 	  
