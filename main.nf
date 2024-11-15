@@ -1,5 +1,7 @@
 #!/usr/bin/env nextflow
 
+nextflow.enable.dsl = 2
+
 def helpMessage() {
     log.info"""
     ================================================================
@@ -24,13 +26,11 @@ def helpMessage() {
                             - lfc_method: method to combine guides / hairpins
                             - cnv_correction: cellline name
                             - filter : column to do count filtering on (default if empty: control)
-                            
-        --legacy         Run Legacy MAGeCK 0.5.5
 
         --counts         Tab-delimited text file containing the raw counts.
                          (default: 'counts_mageck.txt')
                          This file must conform to the input requirements of
-                         MAGeCK 0.5.7 (http://mageck.sourceforge.net)
+                         MAGeCK 0.5.9 (http://mageck.sourceforge.net)
 
         --cnv            Tab-delimited text file containing the estimated
                          copy number per gene. Must be the same as in
@@ -42,6 +42,9 @@ def helpMessage() {
                          prior to normalization for the given contrast.
                          (default: 50)
 
+        --estimate_min_count_from_samples:  boolean indicating if min required counts for filtering
+                                            should be estimated from the samples (> 5% of the mean count)
+
         --min_rra_window Float between 0 and 1 specifying the mininal fraction
                          of guides to consider for the RRA rank algorithm.
                          This overrides the dynamically determined threshold
@@ -52,16 +55,19 @@ def helpMessage() {
         --outputDir      Directory name to save results to. (Defaults to
                          '03_stats')
 
+        --control_sgRNAs: txt file that contains sgRNA-ids to be used by mageck for normalization
+                          and for generating the null distribution of RRA
+
      Profiles:
         standard         local execution
         singularity      local execution with singularity
-        ii2              IMPIMBA2 cluster execution with singularity
+        cbe              IMPIMBA2 cluster execution with singularity
 
      Docker:
-     zuberlab/crispr-nf:latest
+     zuberlab/crispr-nf:0.5.9
 
      Author:
-     Jesse J. Lipp (jesse.lipp@imp.ac.at)
+     Florian Andersch (florian.andersch@imp.ac.at)
 
     """.stripIndent()
 }
@@ -73,145 +79,33 @@ if (params.help) {
     exit 0
 }
 
-Channel
-    .fromPath( params.contrasts )
+// Import modules
+include { MAGECK } from './modules/mageck'
+include { POSTPROCESS } from './modules/postprocess'
+
+contrastsMageck = Channel
+    .fromPath(params.contrasts)
     .splitCsv(sep: '\t', header: true)
-    .set { contrastsMageck }
 
-Channel
-    .fromPath( params.counts )
-    .set { countsMageck }
+countsMageck = Channel.fromPath(params.counts)
 
-Channel
-    .fromPath( params.cnv )
-    .set { cnvMageck }
+cnvMageck = Channel.fromPath(params.cnv)
 
-process mageck {
+ctrlsgRNAs = Channel.fromPath(params.control_sgRNAs)
 
-    tag { parameters.name }
+workflow {
 
-    publishDir path: "${params.outputDir}/${parameters.name}",
-               mode: 'copy',
-               overwrite: 'true',
-               saveAs: {filename ->
-                   if (filename.indexOf(".log") > 0) "$filename"
-                   else if (filename.indexOf(".normalized.txt") > 0) "$filename"
-                   else null
-               }
-                   
-    input:
-    val(parameters) from contrastsMageck
-    each file(counts) from countsMageck
-    each file(cnv) from cnvMageck
+    // Combine input channels
+    ch_mageck = contrastsMageck
+        .combine(countsMageck)
+        .combine(cnvMageck)
+        .combine(ctrlsgRNAs)
 
-    output:
-    set val("${parameters.name}"), file('*.sgrna_summary.txt'), file('*.gene_summary.txt') into resultsMageck
-    file('*.log') into logsMageck
-    file('*.normalized.txt') into normalizedMageck
-
-    script:
-    rra_params = params.min_rra_window > 0 ? "--additional-rra-parameters '-p ${params.min_rra_window}'" : ''
-    cnv_file = file(params.cnv).exists() & parameters.cnv_correction != '' ? "--cnv-norm ${cnv}" : ""
-    cnv_cellline = file(params.cnv).exists() & parameters.cnv_correction != '' ? "--cell-line ${parameters.cnv_correction}" : ""
+    // Run MAGeCK
+    MAGECK(ch_mageck)
     
-    control = parameters.filter == "" ? parameters.control : parameters.filter 
-    
-    if( parameters.norm_method == "quantile" )
-    
-	    """
-	    prefilter_counts.R \
-	        ${counts} \
-	        ${control} \
-	        ${params.min_count} > counts_filtered.txt
-	        
-	    quantile_normalize_counts.R \
-	        counts_filtered.txt > counts_quantile_normalized.txt
-	        
-	    VERSION=\$(mageck -v 2>&1 >/dev/null)
-	    
-	    if [ \$VERSION = "0.5.5" ]; then
-	
-		    mageck test \
-		        --output-prefix ${parameters.name} \
-		        --count-table counts_quantile_normalized.txt \
-		        --control-id ${parameters.control} \
-		        --treatment-id ${parameters.treatment} \
-		        --norm-method none \
-		        --adjust-method ${parameters.fdr_method} \
-		        --gene-lfc-method ${parameters.lfc_method} \
-		        --normcounts-to-file
-	        
-	    else
-		    mageck test \
-			        --output-prefix ${parameters.name} \
-			        --count-table counts_quantile_normalized.txt \
-			        --control-id ${parameters.control} \
-			        --treatment-id ${parameters.treatment} \
-			        --norm-method none \
-			        --adjust-method ${parameters.fdr_method} \
-			        --gene-lfc-method ${parameters.lfc_method} \
-			        --normcounts-to-file \
-			        ${rra_params} \
-			        ${cnv_file} \
-			        ${cnv_cellline}
-	    fi
-	    """
-	else
-	    """
-	    prefilter_counts.R \
-	        ${counts} \
-	        ${control} \
-	        ${params.min_count} > counts_filtered.txt
-	        
-	    VERSION=\$(mageck -v 2>&1 >/dev/null)
-	    
-	    if [ \$VERSION = "0.5.5" ]; then
-	
-		    mageck test \
-		        --output-prefix ${parameters.name} \
-		        --count-table counts_filtered.txt \
-		        --control-id ${parameters.control} \
-		        --treatment-id ${parameters.treatment} \
-		        --norm-method ${parameters.norm_method} \
-		        --adjust-method ${parameters.fdr_method} \
-		        --gene-lfc-method ${parameters.lfc_method} \
-		        --normcounts-to-file 	        
-	    else
-		    mageck test \
-		        --output-prefix ${parameters.name} \
-		        --count-table counts_filtered.txt \
-		        --control-id ${parameters.control} \
-		        --treatment-id ${parameters.treatment} \
-		        --norm-method ${parameters.norm_method} \
-		        --adjust-method ${parameters.fdr_method} \
-		        --gene-lfc-method ${parameters.lfc_method} \
-		        --normcounts-to-file \
-		        ${rra_params} \
-		        ${cnv_file} \
-		        ${cnv_cellline}
-	    fi
-	    """
-}
-
-process postprocess {
-
-    tag { name }
-
-    publishDir path: "${params.outputDir}/${name}",
-               mode: 'copy',
-               overwrite: 'true'
-
-    input:
-    set val(name), file(guides), file(genes) from resultsMageck
-
-    output:
-    set val(name), file('*_stats.txt') into processedMageck
-    file('*.pdf') into qcMageck
-
-    script:
-    """
-    postprocess_mageck.R ${guides} ${genes}
-    """
+    //  Postprocess results
+    POSTPROCESS(MAGECK.out.results)
 }
 
 workflow.onComplete {
