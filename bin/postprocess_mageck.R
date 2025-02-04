@@ -24,12 +24,15 @@ library(ggplot2)
 args       <- commandArgs(trailingOnly = TRUE)
 sgrna_file <- args[1]
 gene_file  <- args[2]
+ctrl_sgRNAs_file <- args[3]
 
 # ------------------------------------------------------------------------------
 # import
 # ------------------------------------------------------------------------------
 sgrna_raw <- read_tsv(sgrna_file, col_types = "ccccddddddddddc")
 genes_raw <- read_tsv(gene_file, col_types = "cidddiiddddiid")
+ctrl_sgRNAs_raw <- read_tsv(ctrl_sgRNAs_file, col_types = "c") %>%
+  rename(id=1)
 
 # ------------------------------------------------------------------------------
 # format sgRNA results
@@ -96,12 +99,13 @@ ggsave(filename = "sgrna_power_curve.pdf", plot = qc1, device = "pdf", width = 6
 
 ### sgrna level MA plot
 qc2 <- sgrna %>%
-  select(control_mean, lfc, fdr) %>%
+  select(id, control_mean, lfc, fdr) %>%
   mutate(fdr = if_else(fdr < 1e-6, 1e-6, fdr)) %>%
-  ggplot(aes(x = control_mean, y = lfc, color = -log10(fdr))) +
+  ggplot(aes(x = control_mean, y = lfc)) +
   geom_hline(yintercept = 0, linetype = 3) +
-  geom_point(size = 0.75) +
+  geom_point(aes(color = -log10(fdr)), size = 0.75) +
   scale_color_gradientn(colors = rainbow(7)) +
+  geom_point(data = . %>% subset(id %in% ctrl_sgRNAs_raw$id),color = "black", size = 0.75) +
   scale_x_log10() +
   theme_light() +
   ggtitle("Guide-level MA plot")

@@ -7,6 +7,7 @@ process MAGECK {
                saveAs: { filename ->
                    if (filename.indexOf(".log") > 0) "$filename"
                    else if (filename.indexOf(".normalized.txt") > 0) "$filename"
+                   else if (filename.indexOf(".pdf") > 0) "$filename"
                    else null
                }
 
@@ -14,9 +15,10 @@ process MAGECK {
     tuple val(parameters), path(counts), path(cnv), path(ctrl)
 
     output:
-    tuple val("${parameters.name}"), path('*.sgrna_summary.txt'), path('*.gene_summary.txt'), emit: results
+    tuple val("${parameters.name}"), path('*.sgrna_summary.txt'), path('*.gene_summary.txt'), path(ctrl), emit: results
     path '*.log', emit: logs
     path '*.normalized.txt', emit: normalized
+    path '*.pdf', emit: qc
 
     script:
     def variance_params = parameters.variance_estimation ? "--variance-estimation-samples ${parameters.variance_estimation}" : ''
@@ -30,6 +32,7 @@ process MAGECK {
     def control = parameters.control != "" ? parameters.control : "empty"
     def treatment = parameters.treatment != "" ? parameters.treatment : "empty"
     def variance = parameters.variance_estimation != "" & parameters.variance_estimation != null ? parameters.variance_estimation : "empty"
+    def mode = parameters.mode != "" ? parameters.mode : "empty"
 
     if (parameters.norm_method == "quantile") {
         """
@@ -40,7 +43,9 @@ process MAGECK {
             ${estimate_min_count_from_samples} \
             ${control} \
             ${treatment} \
-            ${variance}  > counts_filtered.txt
+            ${variance} \
+            ${mode} \
+            ${parameters.norm_method} > counts_filtered.txt
 
         quantile_normalize_counts.R \
             counts_filtered.txt > counts_quantile_normalized.txt
@@ -84,7 +89,9 @@ process MAGECK {
             ${estimate_min_count_from_samples} \
             ${control} \
             ${treatment} \
-            ${variance}  > counts_filtered.txt
+            ${variance} \
+            ${mode} \
+            ${parameters.norm_method} > counts_filtered.txt
 
         VERSION=\$(mageck -v 2>&1 >/dev/null)
 

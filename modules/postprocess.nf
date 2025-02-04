@@ -6,7 +6,7 @@ process POSTPROCESS {
                overwrite: true
 
     input:
-    tuple val(name), path(guides), path(genes)
+    tuple val(name), path(guides), path(genes), path(ctrl)
 
     output:
     tuple val(name), path('*_stats.txt'), emit: processed
@@ -14,6 +14,6 @@ process POSTPROCESS {
 
     script:
     """
-    postprocess_mageck.R ${guides} ${genes}
+    postprocess_mageck.R ${guides} ${genes} ${ctrl}
     """
 }
