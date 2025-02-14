@@ -26,13 +26,20 @@ sgrna_file <- args[1]
 gene_file  <- args[2]
 ctrl_sgRNAs_file <- args[3]
 
+
 # ------------------------------------------------------------------------------
 # import
 # ------------------------------------------------------------------------------
 sgrna_raw <- read_tsv(sgrna_file, col_types = "ccccddddddddddc")
 genes_raw <- read_tsv(gene_file, col_types = "cidddiiddddiid")
-ctrl_sgRNAs_raw <- read_tsv(ctrl_sgRNAs_file, col_types = "c") %>%
-  rename(id=1)
+ctrl_sgRNAs_raw <- data.frame() %>%
+  mutate(id = NA)
+
+if(!is.na(ctrl_sgRNAs_file)){
+  ctrl_sgRNAs_raw <- read_tsv(ctrl_sgRNAs_file, col_types = "c") %>%
+    rename(id=1)
+}
+
 
 # ------------------------------------------------------------------------------
 # format sgRNA results

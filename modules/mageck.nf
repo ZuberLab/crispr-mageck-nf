@@ -15,7 +15,7 @@ process MAGECK {
     tuple val(parameters), path(counts), path(cnv), path(ctrl)
 
     output:
-    tuple val("${parameters.name}"), path('*.sgrna_summary.txt'), path('*.gene_summary.txt'), path(ctrl), emit: results
+    tuple val("${parameters.name}"), path('*.sgrna_summary.txt'), path('*.gene_summary.txt'), emit: results
     path '*.log', emit: logs
     path '*.normalized.txt', emit: normalized
     path '*.pdf', emit: qc

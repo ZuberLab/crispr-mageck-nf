@@ -13,7 +13,8 @@ process POSTPROCESS {
     path '*.pdf', emit: qc
 
     script:
+    def control_sgRNAs = file(params.control_sgRNAs).exists() ? "${ctrl}" : ''
     """
-    postprocess_mageck.R ${guides} ${genes} ${ctrl}
+    postprocess_mageck.R ${guides} ${genes} ${control_sgRNAs}
     """
 }

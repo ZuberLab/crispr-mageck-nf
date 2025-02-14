@@ -60,11 +60,11 @@ def helpMessage() {
 
      Profiles:
         standard         local execution
-        singularity      local execution with singularity
-        cbe              IMPIMBA2 cluster execution with singularity
+        apptainer        local execution with apptainer
+        cbe              CBE cluster execution with apptainer
 
      Docker:
-     zuberlab/crispr-nf:0.5.9
+     zuberlab/crispr-nf:1.0
 
      Author:
      Florian Andersch (florian.andersch@imp.ac.at)
@@ -104,8 +104,11 @@ workflow {
     // Run MAGeCK
     MAGECK(ch_mageck)
     
+    ch_post_process = MAGECK.out.results
+        .combine(ctrlsgRNAs)
+
     //  Postprocess results
-    POSTPROCESS(MAGECK.out.results)
+    POSTPROCESS(ch_post_process)
 }
 
 workflow.onComplete {
