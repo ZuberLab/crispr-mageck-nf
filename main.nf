@@ -26,6 +26,11 @@ def helpMessage() {
                             - lfc_method: method to combine guides / hairpins
                             - cnv_correction: cellline name
                             - filter : column to do count filtering on (default if empty: control)
+                            - variance_estimation: samples (comma seperated) to use for variance estimation 
+                              (default if empty: control)
+                            - gene_level_statistics: mode to calculate gene level statistics. 
+                              Can be set to "control_sgRNAs" for using only the control sgRNAs in the rendering 
+                              of the null distribution of RRA (default if empty: uses mageck default null distribution rendering)
 
         --counts         Tab-delimited text file containing the raw counts.
                          (default: 'counts_mageck.txt')
