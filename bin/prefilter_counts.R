@@ -143,13 +143,8 @@ cpm_filtered <- cpm_table %>%
                    estimate_min_count_from_samples,
                    mode)
 
-if(norm_method == "none"){
-  counts <- cpm_filtered
-
-}else{
-  counts <- counts %>%
-    filter(id %in% cpm_filtered$id)
-}
+counts <- counts %>%
+  filter(id %in% cpm_filtered$id)
 
 counts %>%
   format_tsv %>%
